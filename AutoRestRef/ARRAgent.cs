@@ -10,26 +10,39 @@ using AutoRestRef.DataAccess;
 namespace AutoRestRef
 {
     class ARRAgent
-    { 
-
-        private static string GetDes(string serviceUrl)
+    {
+        public static void Run(string inputFilePath, string outputFilePath)
         {
-            var content = RemoteFileAccess.GetOnlineContent(serviceUrl);
-            const string defaultDesContent = "";
-            if (content != null)
+            var rsl = GetRestAPIOutput(inputFilePath);
+            var jsonString = JsonConvert.SerializeObject(rsl, Formatting.Indented);
+            var writeSuccess = LocalFileAccess.WriteFile(outputFilePath, jsonString);
+            if (writeSuccess)
             {
-                //parse the html
-                Console.WriteLine($"Parse description from {serviceUrl}");
-                var doc = new HtmlDocument();
-                doc.LoadHtml(content);
-                var desNodes = doc.DocumentNode.SelectNodes("//main/p");
-                var value = desNodes == null ? defaultDesContent : desNodes.First().InnerText;           
-                return value;
+                Console.WriteLine("Save file successfully!");
             }
             else
             {
-                //if 404 or parse error then return ""
-                return defaultDesContent;
+                Console.WriteLine("Save file failed with errors.");
+            }
+        }
+        private static List<OutputTemplate> GetRestAPIOutput(string inputFilePath)
+        {
+            var content = LocalFileAccess.ReadFile(inputFilePath);
+            if (content != null)
+            {
+                var restApiJArray = JArray.Parse(content);
+                var rsl = restApiJArray.Select(obj =>
+                {
+                    var name = (string)obj["name"];
+                    var scope = (string)obj["scope"];
+                    var services = GetServices((string)obj["toc_url"]);
+                    return new OutputTemplate(name, scope, services);
+                }).ToList();
+                return rsl;
+            }
+            else
+            {
+                return null;
             }
         }
         private static List<ServiceTemplate> GetServices(string tocUrl)
@@ -55,37 +68,24 @@ namespace AutoRestRef
                 return new List<ServiceTemplate>();
             }
         }
-        private static List<OutputTemplate> GetRestAPIOutput(string inputFilePath)
+        private static string GetDes(string serviceUrl)
         {
-            var content = LocalFileAccess.ReadFile(inputFilePath);
+            var content = RemoteFileAccess.GetOnlineContent(serviceUrl);
+            const string defaultDesContent = "";
             if (content != null)
             {
-                var restApiJArray = JArray.Parse(content);
-                var rsl = restApiJArray.Select(obj =>
-                {
-                    var name = (string)obj["name"];
-                    var scope = (string)obj["scope"];
-                    var services = GetServices((string)obj["toc_url"]);
-                    return new OutputTemplate(name, scope, services);
-                }).ToList();
-                return rsl;
+                //parse the html
+                Console.WriteLine($"Parse description from {serviceUrl}");
+                var doc = new HtmlDocument();
+                doc.LoadHtml(content);
+                var desNodes = doc.DocumentNode.SelectNodes("//main/p");
+                var value = desNodes?.First().InnerText ?? defaultDesContent;           
+                return value;
             }
             else
-            { 
-                return null;
-            }
-        }
-        public static void Run(string inputFilePath, string outputFilePath)
-        {
-            var rsl = GetRestAPIOutput(inputFilePath);
-            var jsonString = JsonConvert.SerializeObject(rsl, Formatting.Indented);
-            var writeSuccess = LocalFileAccess.WriteFile(outputFilePath, jsonString);
-            if (writeSuccess)
             {
-                Console.WriteLine("Save file successfully!");
-            }
-            else {
-                Console.WriteLine("Save file failed with errors.");
+                //if 404 or parse error then return ""
+                return defaultDesContent;
             }
         }
     }
