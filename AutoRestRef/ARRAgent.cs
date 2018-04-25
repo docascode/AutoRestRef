@@ -28,65 +28,50 @@ namespace AutoRestRef
         private static List<OutputTemplate> GetRestAPIOutput(string inputFilePath)
         {
             var content = LocalFileAccess.ReadFile(inputFilePath);
-            if (content != null)
+            //if local file not exist
+            if (content == null) return null;
+            //parse restapi.json
+            var restApiJArray = JArray.Parse(content);
+            var rsl = restApiJArray.Select(obj =>
             {
-                var restApiJArray = JArray.Parse(content);
-                var rsl = restApiJArray.Select(obj =>
-                {
-                    var name = (string)obj["name"];
-                    var scope = (string)obj["scope"];
-                    var services = GetServices((string)obj["toc_url"]);
-                    return new OutputTemplate(name, scope, services);
-                }).ToList();
-                return rsl;
-            }
-            else
-            {
-                return null;
-            }
+                var name = (string)obj["name"];
+                var scope = (string)obj["scope"];
+                var services = GetServices((string)obj["toc_url"]);
+                return new OutputTemplate(name, scope, services);
+            }).ToList();
+            return rsl;
         }
         private static List<ServiceTemplate> GetServices(string tocUrl)
         {
             var content = RemoteFileAccess.GetOnlineContent(tocUrl);
-            if (content != null)
+            //if 404 or no content then return empty list
+            if (content == null) return new List<ServiceTemplate>();
+            //parse toc.json
+            var urlAbsPath = tocUrl.Replace("toc.json", "");
+            var tocJsonObj = JObject.Parse(content);
+            var objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null && obj["toc_title"] != null && obj["href"] != null);
+            var rsl = objWithChildren.Select(obj =>
             {
-                var urlAbsPath = tocUrl.Replace("toc.json", "");
-                var tocJsonObj = JObject.Parse(content);
-                var objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null && obj["toc_title"] != null && obj["href"] != null);
-                var rsl = objWithChildren.Select(obj =>
-                {
-                    var name = (string)obj["toc_title"];
-                    var url = urlAbsPath + obj["href"];
-                    var des = GetDes(url);
-                    return new ServiceTemplate(name, url, des);
-                }).ToList();
-                return rsl;
-            }
-            else
-            {
-                //if 404 or no content then return empty list
-                return new List<ServiceTemplate>();
-            }
+                var name = (string)obj["toc_title"];
+                var url = urlAbsPath + obj["href"];
+                var des = GetDes(url);
+                return new ServiceTemplate(name, url, des);
+            }).ToList();
+            return rsl; 
         }
         private static string GetDes(string serviceUrl)
         {
             var content = RemoteFileAccess.GetOnlineContent(serviceUrl);
             const string defaultDesContent = "";
-            if (content != null)
-            {
-                //parse the html
-                Console.WriteLine($"Parse description from {serviceUrl}");
-                var doc = new HtmlDocument();
-                doc.LoadHtml(content);
-                var desNodes = doc.DocumentNode.SelectNodes("//main/p");
-                var value = desNodes?.First().InnerText ?? defaultDesContent;           
-                return value;
-            }
-            else
-            {
-                //if 404 or parse error then return ""
-                return defaultDesContent;
-            }
+            //if 404 or parse error then return ""
+            if (content == null) return defaultDesContent;
+            //parse the html
+            Console.WriteLine($"Parse description from {serviceUrl}");
+            var doc = new HtmlDocument();
+            doc.LoadHtml(content);
+            var desNodes = doc.DocumentNode.SelectNodes("//main/p");
+            var value = desNodes?.First().InnerText ?? defaultDesContent;           
+            return value;
         }
     }
 }
