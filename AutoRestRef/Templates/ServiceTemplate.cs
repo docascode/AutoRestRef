@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutoRestRef.Templates
 {
@@ -16,10 +12,6 @@ namespace AutoRestRef.Templates
             this.name = name;
             this.url = url;
             this.description = description;
-        }
-        public override string ToString()
-        {
-            return $"({this.name}, {this.url}, {this.description})";
         }
     }
 }
