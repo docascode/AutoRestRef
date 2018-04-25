@@ -19,8 +19,7 @@ namespace AutoRestRef
             //if has only 2 params
             var inputFilePath = args[0];
             var outputFilePath = args[1];
-            ARRAgent.Run(inputFilePath, outputFilePath);
-            return 0;
+            return ARRAgent.Run(inputFilePath, outputFilePath) ? 0 : 1;
         } 
     }
 }
