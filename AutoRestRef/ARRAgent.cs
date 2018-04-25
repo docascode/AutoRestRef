@@ -11,34 +11,48 @@ namespace AutoRestRef
 {
     class ARRAgent
     {
-        public static void Run(string inputFilePath, string outputFilePath)
+        public static bool Run(string inputFilePath, string outputFilePath)
         {
-            var outputObj = GetRestAPIOutput(inputFilePath);
+            var inputJsonArray = CheckAndGetInputContent(inputFilePath);
+            if (inputJsonArray == null) return false;
+
+            var outputObj = GetRestAPIOutput(inputJsonArray);
             var outputJsonStr = JsonConvert.SerializeObject(outputObj, Formatting.Indented);
             var writeSuccess = LocalFileAccess.WriteFile(outputFilePath, outputJsonStr);
             if (writeSuccess)
             {
                 Console.WriteLine("Save file successfully!");
+                return true;
             }
             else
             {
                 Console.WriteLine("Save file failed with errors.");
+                return false;
             }
         }
-        private static List<OutputTemplate> GetRestAPIOutput(string inputFilePath)
+        private static List<InputTemplate> CheckAndGetInputContent(string inputFilePath)
         {
             var content = LocalFileAccess.ReadFile(inputFilePath);
             //if local file not exist
             if (content == null) return null;
-            //parse restapi.json
-            var restApiJArray = JArray.Parse(content);
-            var restApiOutput = restApiJArray.Select(obj =>
+            try
             {
-                var name = (string)obj["name"];
-                var scope = (string)obj["scope"];
-                var services = GetServices((string)obj["toc_url"]);
-                return new OutputTemplate(name, scope, services);
-            }).ToList();
+                //judge the input format match to input template
+                return JsonConvert.DeserializeObject<List<InputTemplate>>(content, new JsonSerializerSettings
+                {
+                    MissingMemberHandling = MissingMemberHandling.Error
+                });
+            }
+            catch (Exception e)
+            {
+                //if input json format not match to InputTemplate structure then failed.
+                Console.WriteLine(e.Message);
+                return null;
+            }
+        }
+        private static List<OutputTemplate> GetRestAPIOutput(List<InputTemplate> inputJsonArray)
+        {
+            var restApiOutput = inputJsonArray.Select(obj => new OutputTemplate(obj.name, obj.scope, GetServices(obj.tocUrl))).ToList();
             return restApiOutput;
         }
         private static List<ServiceTemplate> GetServices(string tocUrl)
