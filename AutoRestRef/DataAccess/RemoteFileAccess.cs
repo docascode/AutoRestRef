@@ -12,7 +12,7 @@ namespace AutoRestRef.DataAccess
             {
                 var client = new WebClient();
                 var uri = new Uri(url);
-                return Encoding.ASCII.GetString(client.DownloadData(uri));
+                return Encoding.UTF8.GetString(client.DownloadData(uri));
             }
             catch (Exception e)
             {

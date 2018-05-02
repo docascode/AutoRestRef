@@ -6,6 +6,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using AutoRestRef.Templates;
 using AutoRestRef.DataAccess;
+using System.Net;
 
 namespace AutoRestRef
 {
@@ -71,11 +72,11 @@ namespace AutoRestRef
                 var des = GetDes(url);
                 return new ServiceTemplate(name, url, des);
             }).ToList();
-            return services; 
+            return services;
         }
         private static string GetDes(string serviceUrl)
         {
-            var content = RemoteFileAccess.GetOnlineContent(serviceUrl);
+            var content = WebUtility.HtmlDecode(RemoteFileAccess.GetOnlineContent(serviceUrl));
             const string defaultDesContent = "";
             //if 404 or parse error then return ""
             if (content == null) return defaultDesContent;
@@ -83,8 +84,8 @@ namespace AutoRestRef
             Console.WriteLine($"Parse description from {serviceUrl}");
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
-            var desNodes = doc.DocumentNode.SelectNodes("//main/p");
-            var des = desNodes?.First().InnerText ?? defaultDesContent;           
+            var desNodes = doc.DocumentNode.SelectSingleNode("//main/p");
+            var des = desNodes?.InnerText ?? defaultDesContent;
             return des;
         }
     }
