@@ -68,7 +68,7 @@ namespace AutoRestRef
             var services = objWithChildren.Select(obj =>
             {
                 var name = (string)obj["toc_title"];
-                var url = urlAbsPath + obj["href"];
+                var url = new Uri(urlAbsPath + obj["href"]).ToString();
                 var des = GetDes(url);
                 return new ServiceTemplate(name, url, des);
             }).ToList();
