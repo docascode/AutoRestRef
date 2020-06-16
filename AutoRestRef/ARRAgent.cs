@@ -65,10 +65,22 @@ namespace AutoRestRef
             var urlAbsPath = tocUrl.Replace("toc.json", "");
             var tocJsonObj = JObject.Parse(content);
             var objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null && obj["toc_title"] != null && obj["href"] != null);
+
+            if (!objWithChildren.Any())
+            {
+                objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null 
+                && obj["toc_title"] != null 
+                && obj["children"].First() != null
+                && obj["children"].First()["toc_title"] != null
+                && obj["children"].First()["toc_title"].ToString() == "Overview"
+                && obj["children"].First()["href"] != null);
+            }
+
             var services = objWithChildren.Select(obj =>
             {
                 var name = (string)obj["toc_title"];
-                var url = new Uri(urlAbsPath + obj["href"]).ToString();
+                var href = obj["href"] == null ? obj["children"].First()["href"] : obj["href"];
+                var url = new Uri(urlAbsPath + href).ToString();
                 var des = GetDes(url);
                 return new ServiceTemplate(name, url, des);
             }).ToList();
