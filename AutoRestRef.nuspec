@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>AutoRestRef</id>
+    <version>$version$</version>
+    <title>AutoRestRef</title>
+    <authors>terryjin</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Automatically tool to generate rest api browser references</description>
+    <releaseNotes>$releaseNotes$</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Rest</tags>
+  </metadata>
+  <files>
+    <file src="output\*.*" target="tools"/>
+  </files>
+</package>
