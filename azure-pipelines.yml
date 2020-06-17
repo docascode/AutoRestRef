@@ -36,7 +36,7 @@ steps:
 
 - task: EsrpCodeSigning@1
   inputs:
-    ConnectedServiceName: 'CodeSigning-APEX'
+    ConnectedServiceName: 'ESRP CodeSigning-Apidrop'
     FolderPath: '$(System.DefaultWorkingDirectory)'
     Pattern: |
         output\**\*.exe
