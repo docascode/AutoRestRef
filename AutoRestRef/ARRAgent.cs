@@ -96,7 +96,7 @@ namespace AutoRestRef
             Console.WriteLine($"Parse description from {serviceUrl}");
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
-            var desNodes = doc.DocumentNode.SelectSingleNode("//main/p");
+            var desNodes = doc.DocumentNode.SelectSingleNode("//main/div[contains(@class, 'content')]/p");
             var des = desNodes?.InnerText ?? defaultDesContent;
             return des;
         }
