@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Net;
+using System.Net.Http;
 
 namespace AutoRestRef.DataAccess
 {
@@ -10,9 +11,20 @@ namespace AutoRestRef.DataAccess
         {
             try
             {
-                var client = new WebClient();
+                HttpClientHandler handler = new HttpClientHandler()
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                };
+                var client = new HttpClient(handler);
+                var cookie = Environment.GetEnvironmentVariable("Cookie");
+                if(!string.IsNullOrEmpty(cookie))
+                {
+                    client.DefaultRequestHeaders.Add("Cookie", cookie);
+                }
                 var uri = new Uri(url);
-                return Encoding.UTF8.GetString(client.DownloadData(uri));
+                var content = client.GetStringAsync(uri).Result;
+
+                return content;
             }
             catch (Exception e)
             {

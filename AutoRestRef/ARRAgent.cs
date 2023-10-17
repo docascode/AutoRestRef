@@ -62,7 +62,9 @@ namespace AutoRestRef
             //if 404 or no content then return empty list
             if (content == null) return new List<ServiceTemplate>();
             //parse toc.json
-            var urlAbsPath = tocUrl.Replace("toc.json", "");
+            var parts = tocUrl.Split("toc.json");
+            var urlAbsPath = parts[0];
+            var queryString = parts[1];
             var tocJsonObj = JObject.Parse(content);
             var objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null && obj["toc_title"] != null && obj["href"] != null);
 
@@ -80,7 +82,7 @@ namespace AutoRestRef
             {
                 var name = (string)obj["toc_title"];
                 var href = obj["href"] == null ? obj["children"].First()["href"] : obj["href"];
-                var url = new Uri(urlAbsPath + href).ToString();
+                var url = new Uri(urlAbsPath + href + queryString).ToString();
                 var des = GetDes(url);
                 return new ServiceTemplate(name, url, des);
             }).ToList();
