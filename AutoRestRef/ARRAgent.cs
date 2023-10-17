@@ -64,7 +64,8 @@ namespace AutoRestRef
             //parse toc.json
             var parts = tocUrl.Split("toc.json");
             var urlAbsPath = parts[0];
-            var queryString = parts[1];
+            // this second part could be used for local debugging
+            // var queryString = parts[1];
             var tocJsonObj = JObject.Parse(content);
             var objWithChildren = tocJsonObj["items"].Where(obj => obj["children"] != null && obj["toc_title"] != null && obj["href"] != null);
 
@@ -82,7 +83,7 @@ namespace AutoRestRef
             {
                 var name = (string)obj["toc_title"];
                 var href = obj["href"] == null ? obj["children"].First()["href"] : obj["href"];
-                var url = new Uri(urlAbsPath + href + queryString).ToString();
+                var url = new Uri(urlAbsPath + href).ToString();
                 var des = GetDes(url);
                 return new ServiceTemplate(name, url, des);
             }).ToList();

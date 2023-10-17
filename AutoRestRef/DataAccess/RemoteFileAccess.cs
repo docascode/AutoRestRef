@@ -16,11 +16,6 @@ namespace AutoRestRef.DataAccess
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
                 };
                 var client = new HttpClient(handler);
-                var cookie = Environment.GetEnvironmentVariable("Cookie");
-                if(!string.IsNullOrEmpty(cookie))
-                {
-                    client.DefaultRequestHeaders.Add("Cookie", cookie);
-                }
                 var uri = new Uri(url);
                 var content = client.GetStringAsync(uri).Result;
 
